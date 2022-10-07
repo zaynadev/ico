@@ -15,13 +15,39 @@ contract ICO is Token{
     uint public tradeStart = saleEnd + 604800; // lock tokens for one week
     uint public constant maxInvest = 5 ether;
     uint public constant minInvest = 0.01 ether;
-    enum State { beforeStart, running, afterEnd, halted }
+    enum State { running, end, halted }
     State public icoState; 
 
     constructor(address payable _deposit){
         deposit = _deposit;
         admin = msg.sender;
-        icoState = State.beforeStart;
+        icoState = State.running;
+    }
+
+    function halt() public onlyAdmin beforeEnd{
+        icoState = State.halted;
+    }
+
+     function resume() public onlyAdmin beforeEnd{
+        icoState = State.running;
+    }
+
+    function currentState() public view returns(State) {
+        return saleEnd <= block.timestamp ? State.end : icoState ;
+    }
+
+    function changeDepositAddress(address payable _deposit) public onlyAdmin {
+        deposit = _deposit;
+    }
+
+    modifier beforeEnd(){
+        require(saleEnd > block.timestamp, "ico ended!");
+        _;
+    }
+
+    modifier onlyAdmin(){
+        require(msg.sender == admin);
+        _;
     }
 
 }
