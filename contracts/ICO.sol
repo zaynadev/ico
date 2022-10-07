@@ -63,6 +63,22 @@ contract ICO is Token{
         invest();
     }
 
+    function transfer(address to, uint256 amount) public override returns (bool) {
+        require(block.timestamp > tradeStart, "trade not yet started!");
+        super.transfer(to, amount);
+        return true;
+    }
+
+    function transferFrom(
+        address from,
+        address to,
+        uint256 amount
+    ) public virtual override returns (bool) {
+        require(block.timestamp > tradeStart, "trade not yet started!");
+        super.transferFrom(from, to, amount);
+        return true;
+    }
+
     modifier beforeEnd(){
         require(saleEnd > block.timestamp, "ico ended!");
         _;
