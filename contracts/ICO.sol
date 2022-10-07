@@ -7,7 +7,6 @@ contract ICO is Token{
     Token token;
     address public admin;
     address payable public deposit; 
-    address public founder;
     uint public constant tokenPrice = 0.001 ether; // token price
     uint public raisedAmount;
     uint public constant maxCap = 300 ether;
@@ -52,6 +51,7 @@ contract ICO is Token{
 
         uint tokens = msg.value / tokenPrice; 
         super._transfer(founder, msg.sender, tokens);
+        deposit.transfer(msg.value);
 
         emit Invest(msg.sender, msg.value, tokens);
         
