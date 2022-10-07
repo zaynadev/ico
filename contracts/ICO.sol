@@ -4,9 +4,10 @@ pragma solidity 0.8.17;
 import "./Token.sol";
 
 contract ICO is Token{
-
+    Token token;
     address public admin;
     address payable public deposit; 
+    address public founder;
     uint public constant tokenPrice = 0.001 ether; // token price
     uint public raisedAmount;
     uint public constant maxCap = 300 ether;
@@ -18,8 +19,11 @@ contract ICO is Token{
     enum State { running, end, halted }
     State public icoState; 
 
-    constructor(address payable _deposit){
+    event Invest(address investor, uint value, uint tokens);
+
+    constructor(address payable _deposit, address _token){
         deposit = _deposit;
+        token = Token(_token);
         admin = msg.sender;
         icoState = State.running;
     }
@@ -38,6 +42,25 @@ contract ICO is Token{
 
     function changeDepositAddress(address payable _deposit) public onlyAdmin {
         deposit = _deposit;
+    }
+
+    function invest() payable public beforeEnd returns(bool){
+        require(icoState == State.running, "ico is halted!");
+        require(msg.value >= minInvest, "min amount is 0.01 ether!");
+        require(msg.value <= maxInvest, "max amount is 5 ether!");
+        require(raisedAmount <= maxCap, "wrong token amount!");
+
+        uint tokens = msg.value / tokenPrice; 
+        super._transfer(founder, msg.sender, tokens);
+
+        emit Invest(msg.sender, msg.value, tokens);
+        
+        return true;
+
+    }
+
+    receive() payable external{
+        invest();
     }
 
     modifier beforeEnd(){
